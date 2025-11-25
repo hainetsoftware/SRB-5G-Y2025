@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SRB-5G-Y2025</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <!-- Proj4js per conversione coordinate -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.min.js"></script>
+    <!-- Leaflet Geocoding per geocodifica -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-control-geocoder/1.14.0/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-control-geocoder/1.14.0/Control.Geocoder.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .header {
+            background: #ffffff;
+            color: #1a202c;
+            padding: 16px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-bottom: 3px solid #2c5282;
+            position: relative;
+            z-index: 1000;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c5282;
+            margin-bottom: 2px;
+        }
+        .header p {
+            font-size: 13px;
+            color: #718096;
+            font-weight: 500;
+        }
+        .header-stats {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .stat-badge {
+            background: #2c5282;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .theme-toggle {
+            background: #2c5282;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .theme-toggle:hover {
+            background: #1e3a5f;
+            transform: scale(1.05);
+        }
+        .content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+        .sidebar {
+            width: 380px;
+            background: #ffffff;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            border-left: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #2c5282;
+            border-radius: 10px;
+        }
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #2c5282;
+        }
+        .station-list {
+            list-style: none;
+        }
+        .station-item {
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .station-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #2c5282;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        .station-item:hover {
+            transform: translateX(4px);
+            border-color: #2c5282;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .station-item:hover::before {
+            transform: scaleY(1);
+        }
+        .station-item-name {
+            font-weight: 600;
+            color: #1a202c;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .station-item-address {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .station-item-operator {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+        .station-item-date {
+            font-size: 11px;
+            color: #a0aec0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .popup-content {
+            font-size: 13px;
+            min-width: 220px;
+            font-family: 'Inter', sans-serif;
+        }
+        .popup-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .popup-content .label {
+            font-weight: 600;
+            color: #4a5568;
+            display: inline-block;
+            min-width: 90px;
+        }
+        .popup-content .value {
+            color: #1a202c;
+        }
+        .popup-content div {
+            margin-bottom: 10px;
+            padding: 6px 0;
+        }
+        .popup-content div:last-child {
+            margin-bottom: 0;
+        }
+        .legend {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        .legend-title {
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        .no-results {
+            text-align: center;
+            color: #a0aec0;
+            padding: 24px;
+            font-size: 14px;
+        }
+        .loading {
+            text-align: center;
+            color: #2c5282;
+            padding: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c5282;
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1001;
+            font-size: 24px;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+        .mobile-toggle:active {
+            transform: scale(0.95);
+        }
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: #1a202c;
+        }
+        body.dark-mode .header {
+            background: #2d3748;
+            border-bottom-color: #4299e1;
+        }
+        body.dark-mode .header h1 {
+            color: #4299e1;
+        }
+        body.dark-mode .header p {
+            color: #a0aec0;
+        }
+        body.dark-mode .stat-badge {
+            background: #4299e1;
+        }
+        body.dark-mode .sidebar {
+            background: #2d3748;
+            border-left-color: #4a5568;
+        }
+        body.dark-mode .sidebar-title {
+            color: #e2e8f0;
+            border-bottom-color: #4299e1;
+        }
+        body.dark-mode .station-item {
+            background: #1a202c;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark-mode .station-item:hover {
+            border-color: #4299e1;
+            background: #2d3748;
+        }
+        body.dark-mode .station-item-name {
+            color: #e2e8f0;
+        }
+        body.dark-mode .station-item-address {
+            color: #a0aec0;
+        }
+        body.dark-mode .station-item-date {
+            color: #718096;
+        }
+        body.dark-mode .legend {
+            background: #1a202c;
+            border-color: #4a5568;
+        }
+        body.dark-mode .legend-title {
+            color: #e2e8f0;
+        }
+        body.dark-mode .legend-item span {
+            color: #e2e8f0;
+        }
+        body.dark-mode .no-stations {
+            color: #718096;
+        }
+        body.dark-mode .loading {
+            color: #4299e1;
+        }
+        body.dark-mode .theme-toggle {
+            background: #4299e1;
+        }
+        body.dark-mode .theme-toggle:hover {
+            background: #3182ce;
+        }
+        body.dark-mode .sidebar::-webkit-scrollbar-thumb {
+            background: #4299e1;
+        }
+        body.dark-mode .sidebar::-webkit-scrollbar-track {
+            background: #1a202c;
+        }
+        body.dark-mode .sidebar-close {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark-mode .mobile-toggle {
+            background: #4299e1;
+        }
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            .header p {
+                font-size: 11px;
+            }
+            .header-stats {
+                display: flex;
+            }
+            .stat-badge {
+                display: none;
+            }
+            .content {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 100%;
+                max-width: 360px;
+                transform: translateX(100%);
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .mobile-toggle {
+                display: flex;
+            }
+            .sidebar-close {
+                display: block;
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                background: #e2e8f0;
+                border: none;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 20px;
+                color: #4a5568;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1>📡 Stazioni Radio Base 2025 - Livorno e Collesalvetti</h1>
+                    <p>Mappa interattiva per SRB 5G dislocate nel 2025</p>
+                </div>
+                <div class="header-stats">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Cambia tema">
+                        <span id="themeIcon">Full Dark</span>
+                    </button>
+                    <div class="stat-badge" id="totalStations">0 Postazioni</div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div id="map"></div>
+            <div class="sidebar">
+                <button class="sidebar-close" onclick="toggleSidebar()" style="display: none;">✕</button>
+                <div class="legend">
+                    <div class="legend-title">📊 Operatori</div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #8B4513;"></div>
+                        <span>Iliad</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #4ECDC4;"></div>
+                        <span>Linkem</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #004B93;"></div>
+                        <span>Tim</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #E60000;"></div>
+                        <span>Vodafone</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #FF6600;"></div>
+                        <span>Wind Tre</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #00B8E6;"></div>
+                        <span>Zefiro Net</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #999999;"></div>
+                        <span>Altri</span>
+                    </div>
+                </div>
+                <div class="sidebar-title">📍 Postazioni (<span id="stationCount">0</span>)</div>
+                <div id="stationList" class="loading">Caricamento dati...</div>
+            </div>
+        </div>
+        <button class="mobile-toggle" onclick="toggleSidebar()">📋</button>
+    </div>
+
+    <script>
+        // Definizione delle proiezioni per conversione coordinate
+        // EPSG:3003 = Gauss-Boaga fuso ovest (coordinate originali)
+        // EPSG:4326 = WGS84 (coordinate per Leaflet/OpenStreetMap)
+        proj4.defs("EPSG:3003", "+proj=tmerc +lat_0=0 +lon_0=9 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs");
+        
+        // Funzione per convertire da Gauss-Boaga a WGS84
+        function convertCoordinates(east, north) {
+            const result = proj4("EPSG:3003", "EPSG:4326", [east, north]);
+            return {
+                longitude: result[0],
+                latitude: result[1]
+            };
+        }
+        
+        // Dati delle postazioni radio base a Livorno nel 2025
+        // Coordinate originali in Gauss-Boaga fuso ovest (EPSG:3003) convertite a WGS84
+        const stationsRaw = [
+            {
+                name: "Livorno Stadio - LI66",
+                address: "Via dei Pensieri",
+                operator: "Tim",
+                date: "28/01/2025",
+                east: 1606322,
+                north: 4820095
+            },
+            {
+                name: "Livorno Gorgona - LI70",
+                address: "-",
+                operator: "Tim",
+                date: "16/10/2025",
+                east: 1573449,
+                north: 4809284
+            },
+            {
+                name: "Piazza SS. Pietro e Paolo - LI57127_004",
+                address: "Piazza SS. Pietro e Paolo",
+                operator: "Iliad",
+                date: "29/05/2025",
+                east: 1605680,
+                north: 4822312
+            },
+            {
+                name: "Livorno Corea - LI57121_001",
+                address: "Via dei Cipressi",
+                operator: "Iliad",
+                date: "07/10/2025",
+                east: 1607437,
+                north: 4824937
+            },
+            {
+                name: "Livorno Palestro - LI57121_005",
+                address: "Via Palestro",
+                operator: "Iliad",
+                date: "09/07/2025",
+                east: 1606364,
+                north: 4823521
+            },
+            {
+                name: "VILLA FABBRICOTTI - LI57127_003",
+                address: "Via Internari",
+                operator: "Iliad",
+                date: "11/07/2025",
+                east: 1606508,
+                north: 4821769
+            },
+            {
+                name: "Livorno piazza Mazzini - LI57123_001",
+                address: "Piazza Mazzini",
+                operator: "Iliad",
+                date: "09/05/2025",
+                east: 1605424,
+                north: 4822214
+            },
+            {
+                name: "LIVORNO PICCHIANTI - LI57014_001",
+                address: "via dello Struggino 10",
+                operator: "Iliad",
+                date: "05/08/2025",
+                east: 1608424,
+                north: 4825701
+            },
+            {
+                name: "LIVORNO DARSENA - LI57121_007",
+                address: "Viale Mogadiscio snc",
+                operator: "Iliad",
+                date: "08/07/2025",
+                east: 1605540,
+                north: 4826220
+            },
+            {
+                name: "LIVORNO SALVIANO - LI57124_001",
+                address: "via di Salviano angolo via di Levante",
+                operator: "Iliad",
+                date: "18/06/2025",
+                east: 1608550,
+                north: 4820751
+            },
+            {
+                name: "Livorno Cimitero - LI57124_002",
+                address: "Via di Levante c/o rotatoria",
+                operator: "Iliad",
+                date: "30/07/2025",
+                east: 1606985,
+                north: 4820879
+            },
+            {
+                name: "Livorno Magrignano - LI315",
+                address: "via di Salviano angolo via di Levante",
+                operator: "Wind Tre",
+                date: "22/01/2025",
+                east: 1608550,
+                north: 4820751
+            },
+            {
+                name: "Livorno Piazza Vittoria - LI316",
+                address: "via Meucci",
+                operator: "Wind Tre",
+                date: "06/08/2025",
+                east: 1607080,
+                north: 4821681
+            },
+            {
+                name: "CASERMA VANNUCCI - LI124",
+                address: "Via Bikonacky",
+                operator: "Wind Tre",
+                date: "22/04/2025",
+                east: 1606999,
+                north: 4819716
+            },
+            {
+                name: "Piazza Grande - LI105",
+                address: "Via Cogorano",
+                operator: "Wind Tre",
+                date: "29/07/2025",
+                east: 1605759,
+                north: 4822873
+            },
+            {
+                name: "Scali D'Azeglio 2 - LI001",
+                address: "Piazza Mazzini",
+                operator: "Wind Tre",
+                date: "18/04/2025",
+                east: 1605453,
+                north: 4822067
+            },
+            {
+                name: "Livorno Piazza XI Maggio - LI311",
+                address: "Via Mastacchi",
+                operator: "Wind Tre",
+                date: "26/02/2025",
+                east: 1606450,
+                north: 4823925
+            },
+            {
+                name: "Livorno Antignano - LI006",
+                address: "Via Pietro Nenni snc c/o campi sportivi",
+                operator: "Wind Tre",
+                date: "31/01/2025",
+                east: 1607182,
+                north: 4818337
+            },
+            {
+                name: "Livorno Centro - LI328",
+                address: "Piazza Cavour",
+                operator: "Wind Tre",
+                date: "12/11/2025",
+                east: 1606021,
+                north: 4822418
+            },
+            {
+                name: "Livorno Fabbricotti - LI007",
+                address: "Via Campania snc",
+                operator: "Wind Tre",
+                date: "18/06/2025",
+                east: 1607064,
+                north: 4820934
+            },
+            {
+                name: "Via di Salviano - LI005",
+                address: "via dei Pelaghi",
+                operator: "Wind Tre",
+                date: "03/04/2025",
+                east: 1608260,
+                north: 4821104
+            },
+            {
+                name: "Livorno Stazione FF.SS. - LI009",
+                address: "via Baroni",
+                operator: "Wind Tre",
+                date: "24/03/2025",
+                east: 1607650,
+                north: 4822931
+            },
+            {
+                name: "Livorno Darsena Toscana Est - LI109",
+                address: "Viale Mogadiscio",
+                operator: "Wind Tre",
+                date: "08/07/2025",
+                east: 1605540,
+                north: 4826220
+            },
+            {
+                name: "LI Corea Est - LIT0C0",
+                address: "via dei fabbri",
+                operator: "Tim",
+                date: "24/09/2025",
+                east: 1608522,
+                north: 4825521
+            },
+            {
+                name: "Via Meucci - LI57127_002",
+                address: "Via Meucci",
+                operator: "Iliad",
+                date: "09/04/2025",
+                east: 1607068,
+                north: 4821678
+            },
+            {
+                name: "Livorno Cimarosa - LI57124_004",
+                address: "Via Cimarosa angolo Via Boccherini",
+                operator: "Iliad",
+                date: "10/10/2025",
+                east: 1607907,
+                north: 4821823
+            },
+            {
+                name: "Antignano - LI57128_005",
+                address: "Via delle Pianacce",
+                operator: "Iliad",
+                date: "04/08/2025",
+                east: 1607709,
+                north: 4817190
+            },
+            {
+                name: "Via Mastacchi - LI57121_003",
+                address: "Via Mastacchi c/o Complesso sportivo",
+                operator: "Iliad",
+                date: "01/04/2025",
+                east: 1606995,
+                north: 4823985
+            },
+            {
+                name: "Livorno - Cinta Esterna - LI57122_003",
+                address: "via Francesco Pera",
+                operator: "Iliad",
+                date: "04/08/2025",
+                east: 1606328,
+                north: 4824196
+            },
+            {
+                name: "Piazza del Cisternone - LI57122_001",
+                address: "Viale Carducci",
+                operator: "Iliad",
+                date: "18/07/2025",
+                east: 1606666,
+                north: 4823130
+            },
+            {
+                name: "Livorno Nord - LV20",
+                address: "Darsena Toscana snc",
+                operator: "Tim",
+                date: "04/02/2025",
+                east: 1605540,
+                north: 4826220
+            },
+            {
+                name: "LI Stazione TRA  -  3RM08169",
+                address: "Via Giovan Battista Giacomelli c/o SSE",
+                operator: "Vodafone",
+                date: "13/10/2025",
+                east: 1608131,
+                north: 4823857
+            },
+            {
+                name: "Livorno Porto - 3OF03833",
+                address: "Calata Punto Franco",
+                operator: "Vodafone",
+                date: "10/09/2025",
+                east: 1605038,
+                north: 4822965
+            },
+            {
+                name: "Livorno Colline - 3OF03826",
+                address: "via C. Ferrigni  104",
+                operator: "Vodafone",
+                date: "13/11/2025",
+                east: 1607052,
+                north: 4822054
+            },
+            {
+                name: "Podere Cerreta - 3OF03803",
+                address: "Via di Nugola",
+                operator: "Vodafone",
+                date: "28/05/2025",
+                east: 1616872,
+                north: 4828096
+            },
+            {
+                name: "Rimazzano TRA - 3RM08230",
+                address: "Loc. La Casaccia",
+                operator: "Vodafone",
+                date: "17/03/2025",
+                east: 1618488,
+                north: 4820600
+            },
+            {
+                name: "Stagno SSI - 3RM06608",
+                address: "Strada Vicinale",
+                operator: "Vodafone",
+                date: "15/05/2025",
+                east: 1609050,
+                north: 4826859
+            },
+            {
+                name: "Collesalvetti Centro - LI349",
+                address: "S.P. dei Poggi",
+                operator: "Zefiro Net",
+                date: "10/06/2025",
+                east: 1618670,
+                north: 4827294
+            },
+            {
+                name: "Vicarello - LI070",
+                address: "C/o depuratore Comunale",
+                operator: "Zefiro Net",
+                date: "12/08/2025",
+                east: 1617813,
+                north: 4830866
+            }
+        ];
+
+        // Converti le coordinate da Gauss-Boaga a WGS84
+        const stations = stationsRaw.map(station => {
+            const coords = convertCoordinates(station.east, station.north);
+            return {
+                name: station.name,
+                address: station.address,
+                operator: station.operator,
+                date: station.date,
+                latitude: coords.latitude,
+                longitude: coords.longitude
+            };
+        });
+
+        // Colori per operatore (colori reali dei brand)
+        const operatorColors = {
+            "Iliad": "#8B4513",
+            "Linkem": "#4ECDC4",
+            "Tim": "#004B93",
+            "Vodafone": "#E60000",
+            "Wind Tre": "#FF6600",
+            "Zefiro Net": "#00B8E6",
+            "Altri": "#999999"
+        };
+        
+        // Funzione per toggle sidebar su mobile
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Inizializzazione mappa - Centro su Livorno con coordinate corrette
+        const map = L.map('map').setView([43.55, 10.31], 13);
+
+        // Tile layers per tema chiaro e scuro (CartoDB HD)
+        const lightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        });
+
+        const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors © CARTO',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        });
+
+        // Variabile per tracciare il layer corrente
+        let currentLayer = lightLayer;
+        currentLayer.addTo(map);
+
+        // Funzione per toggle dark mode
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const isDark = body.classList.toggle('dark-mode');
+            
+            // Cambia icona
+            themeIcon.textContent = isDark ? 'Light' : 'Full Dark';
+            
+            // Cambia layer mappa
+            map.removeLayer(currentLayer);
+            currentLayer = isDark ? darkLayer : lightLayer;
+            currentLayer.addTo(map);
+            
+            // Salva preferenza
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        }
+
+        // Carica preferenza tema salvata
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeIcon').textContent = 'Light';
+            map.removeLayer(currentLayer);
+            currentLayer = darkLayer;
+            currentLayer.addTo(map);
+        }
+
+        // Aggiungi marker per ogni postazione
+        const markers = {};
+        const stationList = document.getElementById('stationList');
+        const sidebar = document.querySelector('.sidebar-title');
+
+        stations.forEach((station, index) => {
+            const color = operatorColors[station.operator] || operatorColors["Altri"];
+            
+            // Crea icona personalizzata
+            const customIcon = L.divIcon({
+                html: `<div style="
+                    background-color: ${color};
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 12px;
+                    color: white;
+                ">${index + 1}</div>`,
+                iconSize: [36, 36],
+                popupAnchor: [0, -18]
+            });
+
+            // Crea popup
+            const popupContent = `
+                <div class="popup-content">
+                    <div class="popup-title">📍 ${station.name}</div>
+                    <div>
+                        <span class="label">📌 Indirizzo:</span><br>
+                        <span class="value">${station.address}</span>
+                    </div>
+                    <div>
+                        <span class="label">📡 Operatore:</span><br>
+                        <span class="value" style="color: ${color}; font-weight: 600;">${station.operator}</span>
+                    </div>
+                    <div>
+                        <span class="label">📅 Data:</span><br>
+                        <span class="value">${station.date}</span>
+                    </div>
+                </div>
+            `;
+
+            // Crea marker
+            const marker = L.marker([station.latitude, station.longitude], {
+                icon: customIcon
+            }).addTo(map).bindPopup(popupContent);
+
+            markers[index] = marker;
+        });
+
+        
+
+        // Aggiorna contatori
+        document.getElementById('stationCount').textContent = stations.length;
+        document.getElementById('totalStations').textContent = `${stations.length} Postazioni`;
+
+        // Popola lista nella sidebar
+        if (stations.length > 0) {
+            stationList.innerHTML = stations.map((station, index) => {
+                const operatorColor = operatorColors[station.operator] || operatorColors['Altri'];
+                return `
+                <div class="station-item" onclick="
+                    markers[${index}].openPopup();
+                    map.setView([${station.latitude}, ${station.longitude}], 15);
+                    if (window.innerWidth <= 768) toggleSidebar();
+                ">
+                    <div class="station-item-name">${index + 1}. ${station.name}</div>
+                    <div class="station-item-address">📍 ${station.address}</div>
+                    <div class="station-item-operator" style="background-color: ${operatorColor}20; color: ${operatorColor};">
+                        ${station.operator}
+                    </div>
+                    <div class="station-item-date">📅 ${station.date}</div>
+                </div>
+            `}).join('');
+        } else {
+            stationList.innerHTML = '<div class="no-results">Nessuna postazione trovata</div>';
+        }
+
+        // Zoom automatico su tutti i marker
+        if (stations.length > 0) {
+            const group = new L.featureGroup(Object.values(markers));
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    </script>
+</body>
+</html>

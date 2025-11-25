@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentazione - Mappa Postazioni Radio Base</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #037FB0 0%, #0056b3 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        h2 {
+            color: #037FB0;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #037FB0;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #0056b3;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #555;
+            line-height: 1.8;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #037FB0;
+        }
+        .feature-card h4 {
+            color: #037FB0;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background: #037FB0;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .highlight {
+            background: #fffacd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .link-section {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        a {
+            color: #037FB0;
+            text-decoration: none;
+            border-bottom: 1px dotted #037FB0;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            background: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📍 Documentazione Tecnica</h1>
+            <p>Mappa Interattiva Postazioni Radio Base - Livorno 2025</p>
+        </div>
+        
+        <div class="content">
+            <h2>🎯 Panoramica del Progetto</h2>
+            <p>
+                La mappa interattiva delle postazioni radio base a Livorno è uno strumento web moderno che consente 
+                di visualizzare, localizzare e ottenere informazioni dettagliate su tutte le stazioni radio base 
+                (SRB) costruite nel comune di Livorno durante l'anno 2025.
+            </p>
+
+            <h2>✨ Caratteristiche Principali</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🗺️ Mappa Interattiva</h4>
+                    <p>Basata su Leaflet e OpenStreetMap, con zoom e pan fluidi</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📍 Marker Intelligenti</h4>
+                    <p>Identificati numericamente e colorati per operatore</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Sidebar Laterale</h4>
+                    <p>Lista completa con accesso rapido alle informazioni</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🎨 Legenda Operatori</h4>
+                    <p>Codice colore per ciascun operatore telefonico</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Popup Informativi</h4>
+                    <p>Dettagli completi per ogni postazione</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📱 Responsive</h4>
+                    <p>Funziona su desktop, tablet e dispositivi mobili</p>
+                </div>
+            </div>
+
+            <h2>📋 Struttura dei Dati</h2>
+            <p>Ogni postazione contiene i seguenti campi:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Tipo</th>
+                        <th>Descrizione</th>
+                        <th>Esempio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>name</code></td>
+                        <td>String</td>
+                        <td>Nome identificativo della postazione</td>
+                        <td>"SRB Ardenza - TIM"</td>
+                    </tr>
+                    <tr>
+                        <td><code>address</code></td>
+                        <td>String</td>
+                        <td>Indirizzo fisico della stazione</td>
+                        <td>"Via delle Benedettine, Ardenza"</td>
+                    </tr>
+                    <tr>
+                        <td><code>operator</code></td>
+                        <td>String</td>
+                        <td>Operatore telefonico</td>
+                        <td>"Tim", "Vodafone", "Wind-Tre", "Iliad", "Linkem"</td>
+                    </tr>
+                    <tr>
+                        <td><code>date</code></td>
+                        <td>String</td>
+                        <td>Data di installazione/autorizzazione</td>
+                        <td>"17/06/2025"</td>
+                    </tr>
+                    <tr>
+                        <td><code>latitude</code></td>
+                        <td>Float</td>
+                        <td>Latitudine WGS84</td>
+                        <td>43.5142</td>
+                    </tr>
+                    <tr>
+                        <td><code>longitude</code></td>
+                        <td>Float</td>
+                        <td>Longitudine WGS84</td>
+                        <td>9.9946</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🎨 Sistema di Colori</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Operatore</th>
+                        <th>Colore</th>
+                        <th>Codice Hex</th>
+                        <th>RGB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Iliad</td>
+                        <td style="background: #FF6B6B; color: white;">■</td>
+                        <td>#FF6B6B</td>
+                        <td>rgb(255, 107, 107)</td>
+                    </tr>
+                    <tr>
+                        <td>Linkem</td>
+                        <td style="background: #4ECDC4; color: white;">■</td>
+                        <td>#4ECDC4</td>
+                        <td>rgb(78, 205, 196)</td>
+                    </tr>
+                    <tr>
+                        <td>Tim</td>
+                        <td style="background: #45B7D1; color: white;">■</td>
+                        <td>#45B7D1</td>
+                        <td>rgb(69, 183, 209)</td>
+                    </tr>
+                    <tr>
+                        <td>Vodafone</td>
+                        <td style="background: #FFA07A; color: white;">■</td>
+                        <td>#FFA07A</td>
+                        <td>rgb(255, 160, 122)</td>
+                    </tr>
+                    <tr>
+                        <td>Wind-Tre</td>
+                        <td style="background: #98D8C8; color: white;">■</td>
+                        <td>#98D8C8</td>
+                        <td>rgb(152, 216, 200)</td>
+                    </tr>
+                    <tr>
+                        <td>Altri gestori</td>
+                        <td style="background: #F7DC6F;">■</td>
+                        <td>#F7DC6F</td>
+                        <td>rgb(247, 220, 111)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>🔧 Tecnologie Utilizzate</h2>
+            <ul>
+                <li><strong>Leaflet.js</strong> - Libreria JavaScript per mappe interattive (v1.9.4)</li>
+                <li><strong>OpenStreetMap</strong> - Dati geografici gratuiti e open-source</li>
+                <li><strong>HTML5</strong> - Struttura semantica del documento</li>
+                <li><strong>CSS3</strong> - Stile moderno con gradients e flexbox</li>
+                <li><strong>JavaScript ES6+</strong> - Logica interattiva e gestione eventi</li>
+            </ul>
+
+            <h2>📍 Sistemi di Coordinate</h2>
+            <h3>Gauss-Boaga Fuso Ovest (EPSG:3003)</h3>
+            <p>Sistema di riferimento originale dei dati ARPAT:</p>
+            <ul>
+                <li>Proiezione: Gauss Conforme</li>
+                <li>Fuso: Ovest (Fuso 32)</li>
+                <li>Meridiano centrale: 12° E</li>
+                <li>Falsa origine: (1500000, 0)</li>
+            </ul>
+
+            <h3>WGS84 (EPSG:4326)</h3>
+            <p>Sistema utilizzato per la visualizzazione su OpenStreetMap:</p>
+            <ul>
+                <li>Proiezione: Web Mercator</li>
+                <li>Coordinate: Latitudine/Longitudine</li>
+                <li>Unità: Gradi decimali</li>
+            </ul>
+
+            <h2>💻 Come Personalizzare</h2>
+            <h3>Aggiungere Nuove Postazioni</h3>
+            <p>Per aggiungere una nuova postazione, aggiungere un oggetto all'array <code>stations</code>:</p>
+            <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto;">
+{
+    name: "SRB Nome - Operatore",
+    address: "Via Indirizzo, Livorno",
+    operator: "Operatore",
+    date: "dd/mm/2025",
+    estGaussBoaga: 1610000,
+    nordGaussBoaga: 4815000,
+    latitude: 43.5500,
+    longitude: 10.3000
+}
+            </pre>
+
+            <h3>Modificare i Colori</h3>
+            <p>I colori sono definiti nell'oggetto <code>operatorColors</code>:</p>
+            <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto;">
+const operatorColors = {
+    "Iliad": "#FF6B6B",
+    "Linkem": "#4ECDC4",
+    // ...
+}
+            </pre>
+
+            <div class="highlight">
+                <strong>⚠️ Nota Importante:</strong> Le coordinate da Gauss-Boaga a WGS84 sono approssimative. 
+                Per conversioni precise, utilizzare tool specializzati come PROJ4 o servizi online dedicati.
+            </div>
+
+            <h2>📱 Responsività</h2>
+            <p>La mappa è completamente responsiva e si adatta a:</p>
+            <ul>
+                <li>Desktop (1200px+)</li>
+                <li>Tablet (768px - 1199px)</li>
+                <li>Mobile (< 768px)</li>
+            </ul>
+
+            <h2>♿ Accessibilità</h2>
+            <ul>
+                <li>Supporto per navigazione da tastiera</li>
+                <li>Contrasti di colore conformi a WCAG AA</li>
+                <li>Testo alternativo per immagini</li>
+                <li>Struttura semantica HTML</li>
+            </ul>
+
+            <h2>🚀 Performance</h2>
+            <ul>
+                <li>Caricamento completamente client-side</li>
+                <li>Nessuna dipendenza da backend</li>
+                <li>Cache browser per immagini e risorse</li>
+                <li>Lazy loading dei dati</li>
+            </ul>
+
+            <h2>🔗 Risorse e Link Utili</h2>
+            <div class="link-section">
+                <h3>Fonti Dati</h3>
+                <ul>
+                    <li><a href="https://sira.arpat.toscana.it/" target="_blank">SIRA - Sistema Informativo Regionale Ambientale</a></li>
+                    <li><a href="https://www.arpat.toscana.it/" target="_blank">ARPAT - Agenzia Regionale per la Protezione dell'Ambiente della Toscana</a></li>
+                </ul>
+
+                <h3>Librerie Utilizzate</h3>
+                <ul>
+                    <li><a href="https://leafletjs.com/" target="_blank">Leaflet.js - Libreria Mappe JavaScript</a></li>
+                    <li><a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap - Dati Geografici</a></li>
+                </ul>
+
+                <h3>Documentazione Tecnica</h3>
+                <ul>
+                    <li><a href="https://leafletjs.com/reference.html" target="_blank">Leaflet API Reference</a></li>
+                    <li><a href="https://wiki.openstreetmap.org/" target="_blank">OpenStreetMap Wiki</a></li>
+                </ul>
+            </div>
+
+            <h2>📄 Licenza</h2>
+            <p>
+                I dati sono rilasciati con licenza <strong>IODL v.2</strong> (Italian Open Data License v2.0).
+                È possibile utilizzare liberamente i dati, con attribuzione consigliata a ARPAT.
+            </p>
+
+            <h2>📞 Contatti e Supporto</h2>
+            <ul>
+                <li><strong>ARPAT</strong> - Agenzia Regionale per la Protezione dell'Ambiente della Toscana</li>
+                <li><strong>Indirizzo:</strong> Via del Ponte alle Mosse, 211 - 50144 Firenze</li>
+                <li><strong>Telefono:</strong> 055 32061</li>
+                <li><strong>Fax:</strong> 055 3206324</li>
+                <li><strong>Email:</strong> pfr_sira@arpat.toscana.it</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 - Documentazione Tecnica | Dati ARPAT SIRA | Licenza IODL v2.0</p>
+        </div>
+    </div>
+</body>
+</html>
